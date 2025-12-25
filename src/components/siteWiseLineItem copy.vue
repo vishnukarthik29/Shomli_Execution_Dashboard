@@ -195,7 +195,7 @@
 
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow p-4 mb-6" v-if="!loading">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
           <input
@@ -240,19 +240,6 @@
             <option value="26-50">26-50%</option>
             <option value="51-75">51-75%</option>
             <option value="76-100">76-100%</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Week Filter (Mon-Sat)</label>
-          <select
-            v-model="filters.weekFilter"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All Weeks</option>
-            <option v-for="week in availableWeeks" :key="week.value" :value="week.value">
-              {{ week.label }}
-            </option>
           </select>
         </div>
       </div>
@@ -462,107 +449,8 @@
       v-if="editingItem"
       class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50"
     >
-      <div class="bg-white rounded-lg p-6 max-w-3xl w-full max-h-screen">
-        <!-- <h3 class="text-xl font-bold mb-4">Edit Line Item</h3>
-          -->
-        <div class="flex justify-between items-start mb-4">
-          <h3 class="text-xl font-bold">Edit Line Item</h3>
-
-          <!-- Info Icon with Hover Tooltip -->
-          <div class="relative group">
-            <i
-              class="bi bi-info-circle text-blue-600 text-xl cursor-help"
-              @click.stop="showInfo = !showInfo"
-            ></i>
-
-            <!-- Tooltip -->
-            <!-- <div
-              v-show="showInfo"
-              class="absolute right-0 top-8 w-96 bg-white border border-gray-200 rounded-lg shadow-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10"
-            > -->
-            <div
-              v-show="showInfo"
-              class="absolute right-0 top-8 w-96 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-10"
-            >
-              <div class="space-y-4">
-                <!-- Previous Dates Section -->
-                <div
-                  v-if="
-                    editingItem.previousDates &&
-                    (editingItem.previousDates.startDates?.length > 0 ||
-                      editingItem.previousDates.endDates?.length > 0)
-                  "
-                >
-                  <h4 class="font-semibold text-sm text-gray-700 mb-2">Previous Dates</h4>
-
-                  <div v-if="editingItem.previousDates.startDates?.length > 0" class="mb-2">
-                    <p class="text-xs font-medium text-gray-600 mb-1">Start Dates:</p>
-                    <div class="space-y-1">
-                      <p
-                        v-for="(date, idx) in editingItem.previousDates.startDates"
-                        :key="'start-' + idx"
-                        class="text-xs text-gray-500 pl-2"
-                      >
-                        {{ formatDate(date) }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div v-if="editingItem.previousDates.endDates?.length > 0">
-                    <p class="text-xs font-medium text-gray-600 mb-1">End Dates:</p>
-                    <div class="space-y-1">
-                      <p
-                        v-for="(date, idx) in editingItem.previousDates.endDates"
-                        :key="'end-' + idx"
-                        class="text-xs text-gray-500 pl-2"
-                      >
-                        {{ formatDate(date) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- History Section -->
-                <div v-if="editingItem.history && editingItem.history.length > 0">
-                  <h4 class="font-semibold text-sm text-gray-700 mb-2">Change History</h4>
-                  <div class="space-y-2 max-h-60 overflow-y-auto">
-                    <div
-                      v-for="(change, idx) in editingItem.history"
-                      :key="idx"
-                      class="border-l-2 border-blue-200 pl-2 py-1"
-                    >
-                      <p class="text-xs font-medium text-gray-700">
-                        {{ formatFieldName(change.field) }}
-                      </p>
-                      <p class="text-xs text-gray-500">
-                        <span class="text-red-600">{{
-                          formatHistoryValue(change.field, change.oldValue)
-                        }}</span>
-                        →
-                        <span class="text-green-600">{{
-                          formatHistoryValue(change.field, change.newValue)
-                        }}</span>
-                      </p>
-                      <p class="text-xs text-gray-400">{{ formatDateTime(change.changedAt) }}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- No Data Message -->
-                <div
-                  v-if="
-                    (!editingItem.previousDates ||
-                      (editingItem.previousDates.startDates?.length === 0 &&
-                        editingItem.previousDates.endDates?.length === 0)) &&
-                    (!editingItem.history || editingItem.history.length === 0)
-                  "
-                >
-                  <p class="text-xs text-gray-500 italic">No history or previous dates available</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto">
+        <h3 class="text-xl font-bold mb-4">Edit Line Item</h3>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -604,6 +492,16 @@
               class="w-full px-3 py-2 border rounded-lg"
             />
           </div>
+          <!-- <div>
+            <label class="block text-sm font-medium mb-1">Work Completion %</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              v-model.number="editingItem.workCompletionPercentage"
+              class="w-full px-3 py-2 border rounded-lg"
+            />
+          </div> -->
         </div>
 
         <div class="mt-6 flex gap-3 justify-end">
@@ -622,7 +520,6 @@
         </div>
       </div>
     </div>
-
     <!-- Photo Manager Component -->
     <PhotoManager
       :is-open="photoState.open"
@@ -647,14 +544,12 @@ const lineItems = ref([])
 const loading = ref(false)
 const error = ref(null)
 const editingItem = ref(null)
-const availableWeeks = ref([])
-const showInfo = ref(false)
+
 const filters = ref({
   search: '',
   category: '',
   materialStatus: '',
   completionRange: '',
-  weekFilter: '',
 })
 
 const props = defineProps({
@@ -663,113 +558,6 @@ const props = defineProps({
     default: '/gateway/api',
   },
 })
-
-// Helper function to get Monday of a given date
-const getMonday = (date) => {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  const day = d.getDay()
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Adjust when day is Sunday
-  const monday = new Date(d.setDate(diff))
-  monday.setHours(0, 0, 0, 0)
-  return monday
-}
-
-// Helper function to get Saturday of a given week
-const getSaturday = (monday) => {
-  const saturday = new Date(monday)
-  saturday.setDate(monday.getDate() + 5) // Monday + 5 days = Saturday
-  saturday.setHours(23, 59, 59, 999)
-  return saturday
-}
-
-// Format date for comparison
-const formatDateKey = (date) => {
-  const d = new Date(date)
-  return d.toISOString().split('T')[0]
-}
-
-// Format date for display
-const formatWeekLabel = (monday, saturday) => {
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
-
-  const monDate = monday.getDate()
-  const monMonth = monthNames[monday.getMonth()]
-  const monYear = monday.getFullYear()
-
-  const satDate = saturday.getDate()
-  const satMonth = monthNames[saturday.getMonth()]
-  const satYear = saturday.getFullYear()
-
-  if (monYear === satYear && monMonth === satMonth) {
-    return `${monDate}-${satDate} ${monMonth} ${monYear}`
-  } else if (monYear === satYear) {
-    return `${monDate} ${monMonth} - ${satDate} ${satMonth} ${monYear}`
-  } else {
-    return `${monDate} ${monMonth} ${monYear} - ${satDate} ${satMonth} ${satYear}`
-  }
-}
-
-// Generate week options based on line items dates
-const generateWeekOptions = () => {
-  if (lineItems.value.length === 0) {
-    availableWeeks.value = []
-    return
-  }
-
-  const weeksMap = new Map()
-
-  lineItems.value.forEach((item) => {
-    if (item.startDate) {
-      const startDate = new Date(item.startDate)
-      const monday = getMonday(startDate)
-      const saturday = getSaturday(monday)
-
-      const weekKey = `${formatDateKey(monday)}_${formatDateKey(saturday)}`
-
-      if (!weeksMap.has(weekKey)) {
-        weeksMap.set(weekKey, {
-          value: weekKey,
-          label: formatWeekLabel(monday, saturday),
-          sortDate: monday.getTime(),
-        })
-      }
-    }
-
-    // Also check end dates
-    if (item.endDate) {
-      const endDate = new Date(item.endDate)
-      const monday = getMonday(endDate)
-      const saturday = getSaturday(monday)
-
-      const weekKey = `${formatDateKey(monday)}_${formatDateKey(saturday)}`
-
-      if (!weeksMap.has(weekKey)) {
-        weeksMap.set(weekKey, {
-          value: weekKey,
-          label: formatWeekLabel(monday, saturday),
-          sortDate: monday.getTime(),
-        })
-      }
-    }
-  })
-
-  // Sort weeks by date (most recent first)
-  availableWeeks.value = Array.from(weeksMap.values()).sort((a, b) => b.sortDate - a.sortDate)
-}
 
 // Computed: Unique categories for filter dropdown
 const uniqueCategories = computed(() => {
@@ -811,39 +599,6 @@ const filteredLineItems = computed(() => {
     })
   }
 
-  // Week filter (Monday to Saturday)
-  if (filters.value.weekFilter) {
-    const [weekStartStr, weekEndStr] = filters.value.weekFilter.split('_')
-    const weekStart = new Date(weekStartStr)
-    weekStart.setHours(0, 0, 0, 0)
-    const weekEnd = new Date(weekEndStr)
-    weekEnd.setHours(23, 59, 59, 999)
-
-    filtered = filtered.filter((item) => {
-      if (!item.startDate) return false
-
-      const startDate = new Date(item.startDate)
-      startDate.setHours(0, 0, 0, 0)
-
-      const endDate = item.endDate ? new Date(item.endDate) : null
-      if (endDate) endDate.setHours(23, 59, 59, 999)
-
-      // Check if start date is within the week
-      const startInWeek = startDate >= weekStart && startDate <= weekEnd
-
-      // Check if end date is within the week
-      const endInWeek = endDate && endDate >= weekStart && endDate <= weekEnd
-
-      // Check if the item's date range completely contains the week
-      const weekWithinItem = endDate && weekStart >= startDate && weekEnd <= endDate
-
-      // Check if there's any overlap between item dates and week
-      const hasOverlap = endDate && startDate <= weekEnd && endDate >= weekStart
-
-      return startInWeek || endInWeek || weekWithinItem || hasOverlap
-    })
-  }
-
   return filtered
 })
 
@@ -873,7 +628,7 @@ const statistics = computed(() => {
   const deliveredIncompleteCount = items.filter((item) => {
     return (
       isDelayed(item) &&
-      item.materialStatus === 'Intialized/Delivered' &&
+      item.materialStatus === 'Delivered' &&
       (item.workCompletionPercentage || 0) < 100
     )
   }).length
@@ -899,7 +654,6 @@ const fetchLineItems = async () => {
     const params = siteName ? { siteName } : {}
     const response = await axios.get(`${props.apiBaseUrl}/line-items/site`, { params })
     lineItems.value = response.data
-    generateWeekOptions()
   } catch (err) {
     error.value = err.response?.data?.error || 'Failed to fetch line items'
     console.error('Error fetching line items:', err)
@@ -916,14 +670,6 @@ const formatCurrency = (value) => {
   }).format(value || 0)
 }
 
-// const formatDate = (date) => {
-//   if (!date) return '-'
-//   return new Date(date).toLocaleDateString('en-IN', {
-//     day: 'numeric',
-//     month: 'short',
-//     year: 'numeric',
-//   })
-// }
 const formatDate = (date) => {
   if (!date) return '-'
   return new Date(date).toLocaleDateString('en-IN', {
@@ -933,39 +679,12 @@ const formatDate = (date) => {
   })
 }
 
-const formatDateTime = (date) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const formatFieldName = (field) => {
-  const fieldNames = {
-    quantity: 'Quantity',
-    workStatusInUnits: 'Work Status (Units)',
-    materialStatus: 'Material Status',
-  }
-  return fieldNames[field] || field
-}
-
-const formatHistoryValue = (field, value) => {
-  if (value === null || value === undefined) return 'N/A'
-  if (field === 'materialStatus') return value
-  return value.toString()
-}
-
 const clearFilters = () => {
   filters.value = {
     search: '',
     category: '',
     materialStatus: '',
     completionRange: '',
-    weekFilter: '',
   }
 }
 
@@ -1024,8 +743,6 @@ const photoState = ref({
   itemData: null,
 })
 
-const ASSET_BASE_URL = props.apiBaseUrl
-
 const openPhotos = (item) => {
   photoState.value = {
     open: true,
@@ -1044,11 +761,10 @@ const closePhotos = () => {
 
 const handlePhotosUpdated = () => {
   console.log('Photos updated - refresh your data')
-  fetchLineItems()
 }
 
 const handleError = (errorMsg) => {
-  error.value = errorMsg
+  console.error(errorMsg)
 }
 // photos end
 

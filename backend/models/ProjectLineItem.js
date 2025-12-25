@@ -59,6 +59,36 @@ const projectLineItemSchema = new mongoose.Schema(
     },
     startDate: { type: Date },
     endDate: { type: Date },
+    previousDates: {
+      startDates: [{ type: Date }],
+      endDates: [{ type: Date }],
+    },
+    history: [
+      {
+        field: {
+          type: String,
+          enum: ['quantity', 'workStatusInUnits', 'materialStatus'],
+          required: true,
+        },
+        oldValue: mongoose.Schema.Types.Mixed,
+        newValue: mongoose.Schema.Types.Mixed,
+        changedAt: { type: Date, default: Date.now },
+      },
+    ],
+
+    startDateCounter: {
+      type: Number,
+      default: 0,
+    },
+    endDateCounter: {
+      type: Number,
+      default: 0,
+    },
+    dateFlag: {
+      type: Boolean,
+      default: false,
+    },
+
     materialPhoto: [
       {
         url: { type: String, required: true },
@@ -103,25 +133,6 @@ projectLineItemSchema.pre('save', function (next) {
   ).toFixed(2)
   this.workCompletionAmount = (this.amount * this.workCompletionPercentage) / 100
 })
-
-// Pre-update hook (findOneAndUpdate)
-// projectLineItemSchema.pre('findOneAndUpdate', function (next) {
-//   const update = this.getUpdate()
-
-//   if (!update) return next()
-
-//   const amount = update.$set?.amount ?? update.amount
-//   const percentage = update.$set?.workCompletionPercentage ?? update.workCompletionPercentage
-
-//   if (amount !== undefined && percentage !== undefined) {
-//     update.$set = {
-//       ...(update.$set || {}),
-//       workCompletionAmount: (amount * percentage) / 100,
-//     }
-//   }
-
-//   // next()
-// })
 
 /* ===========================
    Instance Methods

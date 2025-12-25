@@ -19,9 +19,6 @@
     <!-- Statistics Cards -->
     <StatisticsCards v-if="summary" :summary="summary" />
 
-    <!-- Alert Cards -->
-    <AlertCard v-if="alertData" :alert-data="alertData" />
-
     <!-- Data Table -->
     <SummaryTable :line-items="lineItems" :loading="loading" />
   </div>
@@ -29,14 +26,12 @@
 
 <script>
 import StatisticsCards from '@/components/StatisticsCard.vue'
-import AlertCard from '@/components/AlertCard.vue'
 import SummaryTable from '@/components/summaryTable.vue'
 
 export default {
   name: 'DashboardView',
   components: {
     StatisticsCards,
-    AlertCard,
     SummaryTable,
   },
 
@@ -44,7 +39,6 @@ export default {
     return {
       loading: false,
       summary: null,
-      alertData: null,
       lineItems: [],
       sites: [],
       selectedSite: '',
@@ -65,7 +59,8 @@ export default {
     },
 
     async fetchData() {
-      await Promise.all([this.fetchSummary(), this.fetchAlertData(), this.fetchLineItems()])
+      await this.fetchSummary()
+      await this.fetchLineItems()
     },
 
     async fetchSummary() {
@@ -78,21 +73,6 @@ export default {
         this.summary = await response.json()
       } catch (err) {
         this.$emit('error', 'Failed to fetch summary')
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async fetchAlertData() {
-      this.loading = true
-      try {
-        const url = this.selectedSite
-          ? `/gateway/api/alerts?siteName=${encodeURIComponent(this.selectedSite)}`
-          : `/gateway/api/alerts`
-        const response = await fetch(url)
-        this.alertData = await response.json()
-      } catch (err) {
-        this.$emit('error', 'Failed to fetch alert data')
       } finally {
         this.loading = false
       }

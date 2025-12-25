@@ -12,6 +12,7 @@ router.get('/sites', projectController.getSites)
 
 // Line item CRUD routes
 router.get('/line-items', projectController.getAllLineItems)
+router.get('/alerts', projectController.getAlertCardData)
 router.get('/line-items/:id', projectController.getLineItemById)
 router.post('/line-items', projectController.createLineItem)
 router.put('/line-items/:id', projectController.updateLineItem)

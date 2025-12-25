@@ -462,107 +462,8 @@
       v-if="editingItem"
       class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50"
     >
-      <div class="bg-white rounded-lg p-6 max-w-3xl w-full max-h-screen">
-        <!-- <h3 class="text-xl font-bold mb-4">Edit Line Item</h3>
-          -->
-        <div class="flex justify-between items-start mb-4">
-          <h3 class="text-xl font-bold">Edit Line Item</h3>
-
-          <!-- Info Icon with Hover Tooltip -->
-          <div class="relative group">
-            <i
-              class="bi bi-info-circle text-blue-600 text-xl cursor-help"
-              @click.stop="showInfo = !showInfo"
-            ></i>
-
-            <!-- Tooltip -->
-            <!-- <div
-              v-show="showInfo"
-              class="absolute right-0 top-8 w-96 bg-white border border-gray-200 rounded-lg shadow-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10"
-            > -->
-            <div
-              v-show="showInfo"
-              class="absolute right-0 top-8 w-96 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-10"
-            >
-              <div class="space-y-4">
-                <!-- Previous Dates Section -->
-                <div
-                  v-if="
-                    editingItem.previousDates &&
-                    (editingItem.previousDates.startDates?.length > 0 ||
-                      editingItem.previousDates.endDates?.length > 0)
-                  "
-                >
-                  <h4 class="font-semibold text-sm text-gray-700 mb-2">Previous Dates</h4>
-
-                  <div v-if="editingItem.previousDates.startDates?.length > 0" class="mb-2">
-                    <p class="text-xs font-medium text-gray-600 mb-1">Start Dates:</p>
-                    <div class="space-y-1">
-                      <p
-                        v-for="(date, idx) in editingItem.previousDates.startDates"
-                        :key="'start-' + idx"
-                        class="text-xs text-gray-500 pl-2"
-                      >
-                        {{ formatDate(date) }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div v-if="editingItem.previousDates.endDates?.length > 0">
-                    <p class="text-xs font-medium text-gray-600 mb-1">End Dates:</p>
-                    <div class="space-y-1">
-                      <p
-                        v-for="(date, idx) in editingItem.previousDates.endDates"
-                        :key="'end-' + idx"
-                        class="text-xs text-gray-500 pl-2"
-                      >
-                        {{ formatDate(date) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- History Section -->
-                <div v-if="editingItem.history && editingItem.history.length > 0">
-                  <h4 class="font-semibold text-sm text-gray-700 mb-2">Change History</h4>
-                  <div class="space-y-2 max-h-60 overflow-y-auto">
-                    <div
-                      v-for="(change, idx) in editingItem.history"
-                      :key="idx"
-                      class="border-l-2 border-blue-200 pl-2 py-1"
-                    >
-                      <p class="text-xs font-medium text-gray-700">
-                        {{ formatFieldName(change.field) }}
-                      </p>
-                      <p class="text-xs text-gray-500">
-                        <span class="text-red-600">{{
-                          formatHistoryValue(change.field, change.oldValue)
-                        }}</span>
-                        →
-                        <span class="text-green-600">{{
-                          formatHistoryValue(change.field, change.newValue)
-                        }}</span>
-                      </p>
-                      <p class="text-xs text-gray-400">{{ formatDateTime(change.changedAt) }}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- No Data Message -->
-                <div
-                  v-if="
-                    (!editingItem.previousDates ||
-                      (editingItem.previousDates.startDates?.length === 0 &&
-                        editingItem.previousDates.endDates?.length === 0)) &&
-                    (!editingItem.history || editingItem.history.length === 0)
-                  "
-                >
-                  <p class="text-xs text-gray-500 italic">No history or previous dates available</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto">
+        <h3 class="text-xl font-bold mb-4">Edit Line Item</h3>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -648,7 +549,7 @@ const loading = ref(false)
 const error = ref(null)
 const editingItem = ref(null)
 const availableWeeks = ref([])
-const showInfo = ref(false)
+
 const filters = ref({
   search: '',
   category: '',
@@ -873,7 +774,7 @@ const statistics = computed(() => {
   const deliveredIncompleteCount = items.filter((item) => {
     return (
       isDelayed(item) &&
-      item.materialStatus === 'Intialized/Delivered' &&
+      item.materialStatus === 'Delivered' &&
       (item.workCompletionPercentage || 0) < 100
     )
   }).length
@@ -916,14 +817,6 @@ const formatCurrency = (value) => {
   }).format(value || 0)
 }
 
-// const formatDate = (date) => {
-//   if (!date) return '-'
-//   return new Date(date).toLocaleDateString('en-IN', {
-//     day: 'numeric',
-//     month: 'short',
-//     year: 'numeric',
-//   })
-// }
 const formatDate = (date) => {
   if (!date) return '-'
   return new Date(date).toLocaleDateString('en-IN', {
@@ -931,32 +824,6 @@ const formatDate = (date) => {
     month: 'short',
     year: 'numeric',
   })
-}
-
-const formatDateTime = (date) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const formatFieldName = (field) => {
-  const fieldNames = {
-    quantity: 'Quantity',
-    workStatusInUnits: 'Work Status (Units)',
-    materialStatus: 'Material Status',
-  }
-  return fieldNames[field] || field
-}
-
-const formatHistoryValue = (field, value) => {
-  if (value === null || value === undefined) return 'N/A'
-  if (field === 'materialStatus') return value
-  return value.toString()
 }
 
 const clearFilters = () => {

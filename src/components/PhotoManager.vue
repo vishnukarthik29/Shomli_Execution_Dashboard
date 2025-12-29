@@ -304,7 +304,7 @@ const props = defineProps({
   },
   assetBase: {
     type: String,
-    default: 'http://192.168.29.237:7001',
+    default: '/gateway/uploads',
   },
 })
 
@@ -532,10 +532,18 @@ const timelineStatusIcon = computed(() => {
 })
 
 // Methods
+// const resolveImageUrl = (url) => {
+//   if (!url) return ''
+//   if (url.startsWith('http')) return url
+//   console.log(`${props.assetBase}${url}`)
+//   return `${props.assetBase}${url}`
+// }
 const resolveImageUrl = (url) => {
   if (!url) return ''
   if (url.startsWith('http')) return url
-  return `${props.assetBase}${url}`
+
+  // DB gives: /uploads/xxx.png
+  return `/gateway${url}`
 }
 
 const formatDate = (date) => {
@@ -605,6 +613,7 @@ const loadPhotos = async () => {
       workCompletionPhoto: workRes.data.photos,
       finishedPhoto: finishedRes.data.photos,
     }
+    console.log(item.value)
   } catch (err) {
     emit('error', err.response?.data?.error || 'Failed to load photos')
   }

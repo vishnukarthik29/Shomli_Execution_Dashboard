@@ -12,6 +12,7 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: ['shomli.in', 'www.shomli.in'],
     port: 7174,
     proxy: {
       '/gateway/': {

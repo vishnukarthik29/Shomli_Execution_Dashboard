@@ -15,7 +15,7 @@ export default defineConfig({
     port: 7174,
     proxy: {
       '/gateway/': {
-        target: 'http://localhost:7001',
+        target: 'http://localhost:7101',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/gateway/, ''), // Optional: remove '/gateway' from the path
       },

@@ -274,82 +274,82 @@
           <thead class="bg-gray-50 sticky top-0">
             <tr>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 S.NO
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Site
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Category
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Item Description
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Quantity
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Units
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Rate
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Amount
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Material Status
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Work Status
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Completion %
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Completion Amt
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Start Date
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 End Date
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Photos
               </th>
               <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
               >
                 Actions
               </th>
@@ -364,8 +364,13 @@
               <td class="px-3 py-4 whitespace-nowrap text-sm">{{ item.sno }}</td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">{{ item.siteName }}</td>
               <td class="px-3 py-4 text-sm">{{ item.category }}</td>
-              <td class="px-3 py-4 text-sm min-w-75 whitespace-normal">
-                {{ item.itemDescription }}
+              <td
+                class="px-3 py-4 text-sm min-w-75 whitespace-normal cursor-pointer hover:bg-gray-50"
+                @click="openDescriptionModal(item)"
+              >
+                <div class="line-clamp-2">
+                  {{ item.itemDescription }}
+                </div>
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">{{ item.quantity }}</td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">{{ item.units }}</td>
@@ -634,6 +639,31 @@
       @error="handleError"
     />
   </div>
+  <!-- Description Modal -->
+  <div
+    v-if="showDescriptionModal"
+    class="fixed inset-0 bg-black/30 backdrop-blur-md overflow-y-auto flex items-center justify-center h-full w-full z-50"
+    @click="closeDescriptionModal"
+  >
+    <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto" @click.stop>
+      <div class="flex justify-between items-start mb-4">
+        <h3 class="text-lg font-semibold">Item Description</h3>
+        <button @click="closeDescriptionModal" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <p class="text-sm text-gray-700 whitespace-pre-wrap">
+        {{ selectedDescription }}
+      </p>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -649,6 +679,8 @@ const error = ref(null)
 const editingItem = ref(null)
 const availableWeeks = ref([])
 const showInfo = ref(false)
+const showDescriptionModal = ref(false)
+const selectedDescription = ref('')
 const filters = ref({
   search: '',
   category: '',
@@ -1032,6 +1064,16 @@ const openPhotos = (item) => {
     lineItemId: item._id,
     itemData: item,
   }
+}
+
+const openDescriptionModal = (item) => {
+  selectedDescription.value = item.itemDescription
+  showDescriptionModal.value = true
+}
+
+const closeDescriptionModal = () => {
+  showDescriptionModal.value = false
+  selectedDescription.value = ''
 }
 
 const closePhotos = () => {

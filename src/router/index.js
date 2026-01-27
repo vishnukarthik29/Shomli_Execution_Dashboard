@@ -3,6 +3,8 @@ import dashboard from '@/pages/dashboard.vue'
 import siteWiseLineItem from '@/components/siteWiseLineItem.vue'
 import siteWiseLineItemUpload from '@/components/siteWiseLineItemUpload.vue'
 import UploadView from '@/components/UploadView.vue'
+import MaterialTracker from '@/components/MaterialTracker.vue'
+import MaterialItems from '@/components/MaterialItems.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +25,19 @@ const router = createRouter({
       component: siteWiseLineItem,
       props: true,
     },
+    {
+      path: '/material/:siteName',
+      name: 'MaterialTracker',
+      component: MaterialTracker,
+      props: true,
+    },
+    {
+      path: '/materialitem/:siteName',
+      name: 'MaterialItems',
+      component: MaterialItems,
+      props: true,
+    },
+
     {
       path: '/siteupload/:siteName',
       name: 'site-line-items-upload',

@@ -30,11 +30,24 @@
     </div>
 
     <!-- Header -->
-    <div class="mb-6" v-if="!loading">
-      <h1 class="text-2xl font-bold text-gray-800">
-        {{ $route.params.siteName || 'All Sites' }} - Line Items
-      </h1>
-      <p class="text-gray-600 mt-1">Total Items: {{ filteredLineItems.length }}</p>
+    <div class="mb-6 flex items-center justify-between" v-if="!loading">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">
+          {{ $route.params.siteName || 'All Sites' }} - Line Items
+        </h1>
+        <p class="text-gray-600 mt-1">Total Items: {{ filteredLineItems.length }}</p>
+      </div>
+
+      <!-- Material Tracker Button -->
+      <router-link
+        :to="{
+          name: 'MaterialTracker',
+          params: { siteName: $route.params.siteName },
+        }"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-cyan-700 transition flex items-center gap-2"
+      >
+        Materials Tracker
+      </router-link>
     </div>
 
     <!-- Statistics Cards -->

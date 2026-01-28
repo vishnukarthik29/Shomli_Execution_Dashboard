@@ -300,30 +300,79 @@
             </table>
           </div>
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <!-- Shop Drawing Radio Buttons -->
+          <div class="w-full bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Shop Drawing</label>
+            <div class="flex gap-6">
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="editingItem.shopDrawing"
+                  value="Internal"
+                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                />
+                <span class="ml-2 text-sm text-gray-700">Internal</span>
+              </label>
 
-        <!-- Shop Drawing Radio Buttons -->
-        <div class="w-full bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <label class="block text-sm font-medium text-gray-700 mb-3">Shop Drawing</label>
-          <div class="flex gap-6">
-            <label class="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                v-model="editingItem.shopDrawing"
-                value="Internal"
-                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
-              />
-              <span class="ml-2 text-sm text-gray-700">Internal</span>
-            </label>
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="editingItem.shopDrawing"
+                  value="External"
+                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                />
+                <span class="ml-2 text-sm text-gray-700">External</span>
+              </label>
+            </div>
+          </div>
+          <div class="w-full bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-3">TDS</label>
+            <div class="flex gap-6">
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="editingItem.TDS"
+                  value="Internal"
+                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                />
+                <span class="ml-2 text-sm text-gray-700">yes</span>
+              </label>
 
-            <label class="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                v-model="editingItem.shopDrawing"
-                value="External"
-                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
-              />
-              <span class="ml-2 text-sm text-gray-700">External</span>
-            </label>
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="editingItem.TDS"
+                  value="External"
+                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                />
+                <span class="ml-2 text-sm text-gray-700">no</span>
+              </label>
+            </div>
+          </div>
+          <div class="w-full bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Samples</label>
+            <div class="flex gap-6">
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="editingItem.Samples"
+                  value="Internal"
+                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                />
+                <span class="ml-2 text-sm text-gray-700">yes</span>
+              </label>
+
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  v-model="editingItem.Samples"
+                  value="External"
+                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                />
+                <span class="ml-2 text-sm text-gray-700">no</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>

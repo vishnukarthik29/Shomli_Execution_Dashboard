@@ -27,4 +27,6 @@ router.get('/line-items/:id/photos', uploadController.getLineItemPhotos)
 
 router.delete('/upload/photos', uploadController.deletePhoto)
 
+router.get('/materials/unique', projectController.getUniqueMaterials)
+
 export default router

@@ -108,6 +108,39 @@ const projectLineItemSchema = new mongoose.Schema(
         uploadedAt: { type: Date, default: Date.now },
       },
     ],
+    // NEW FIELDS
+    materials: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          default: 0,
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    shopDrawing: {
+      type: String,
+      enum: ['Internal', 'External', null],
+      default: null,
+    },
+    TDS: {
+      type: String,
+      enum: ['yes', 'no', null],
+      default: null,
+    },
+    Samples: {
+      type: String,
+      enum: ['yes', 'no', null],
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -37,3 +37,6 @@ __screenshots__/
 
 # Environment Variables
 *.env
+
+#Uploads
+/backend/uploads/

@@ -73,15 +73,13 @@ export const getAlertCardData = async (req, res) => {
     const filter = siteName ? { siteName } : {}
 
     const today = new Date()
-    today.setHours(0, 0, 0, 0) // Set to start of day for accurate comparison
+    today.setHours(0, 0, 0, 0)
 
-    // Find all items that are delayed (endDate < today)
     const delayedItems = await ProjectLineItem.find({
       ...filter,
       endDate: { $exists: true, $ne: null, $lt: today },
-    }).sort({ endDate: 1 }) // Sort by end date, oldest first
+    }).sort({ endDate: 1 })
 
-    // Categorize delayed items
     const materialNotDelivered = delayedItems.filter(
       (item) => item.materialStatus === 'Not Delivered',
     )
@@ -91,7 +89,6 @@ export const getAlertCardData = async (req, res) => {
         item.materialStatus === 'Intialized/Delivered' && item.workCompletionPercentage < 100,
     )
 
-    // Calculate summary statistics
     const materialNotDeliveredStats = {
       count: materialNotDelivered.length,
       totalAmount: materialNotDelivered.reduce((sum, item) => sum + item.amount, 0),
@@ -185,8 +182,18 @@ export const updateLineItem = async (req, res) => {
       return res.status(404).json({ error: 'Line item not found' })
     }
 
-    const { startDate, endDate, quantity, workStatusInUnits, materialStatus, ...otherUpdates } =
-      req.body
+    const {
+      startDate,
+      endDate,
+      quantity,
+      workStatusInUnits,
+      materialStatus,
+      materials,
+      shopDrawing,
+      TDS,
+      Samples,
+      ...otherUpdates
+    } = req.body
 
     /* ===========================
        DATE CHANGE TRACKING
@@ -221,24 +228,53 @@ export const updateLineItem = async (req, res) => {
     }
 
     /* ===========================
-   WORK / MATERIAL HISTORY
-=========================== */
+       WORK / MATERIAL HISTORY (ONLY THESE FIELDS)
+    ============================ */
 
     const historyFields = ['quantity', 'workStatusInUnits', 'materialStatus']
 
     historyFields.forEach((field) => {
       if (req.body[field] !== undefined && req.body[field] !== lineItem[field]) {
-        // Save history BEFORE updating
         lineItem.history.push({
           field,
           oldValue: lineItem[field],
           newValue: req.body[field],
           changedAt: new Date(),
         })
-
-        // Apply update
         lineItem[field] = req.body[field]
       }
+    })
+
+    /* ===========================
+       MATERIALS UPDATE (NO HISTORY)
+    ============================ */
+
+    if (materials !== undefined) {
+      lineItem.materials = materials
+    }
+
+    /* ===========================
+       SHOP DRAWING, TDS, SAMPLES (NO HISTORY)
+    ============================ */
+
+    if (shopDrawing !== undefined) {
+      lineItem.shopDrawing = shopDrawing
+    }
+
+    if (TDS !== undefined) {
+      lineItem.TDS = TDS
+    }
+
+    if (Samples !== undefined) {
+      lineItem.Samples = Samples
+    }
+
+    /* ===========================
+       APPLY OTHER UPDATES
+    ============================ */
+
+    Object.keys(otherUpdates).forEach((key) => {
+      lineItem[key] = otherUpdates[key]
     })
 
     await lineItem.save()
@@ -259,6 +295,130 @@ export const deleteLineItem = async (req, res) => {
     }
 
     res.json({ message: 'Line item deleted successfully' })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+// // Get unique materials from all line items
+// export const getUniqueMaterials = async (req, res) => {
+//   try {
+//     const { siteName } = req.query
+//     const filter = siteName ? { siteName } : {}
+
+//     const lineItems = await ProjectLineItem.find(filter, {
+//       materials: 1,
+//       shopDrawing: 1,
+//       TDS: 1,
+//       Samples: 1,
+//       itemDescription: 1,
+//     })
+
+//     // Create a map to track unique materials
+//     const materialsMap = new Map()
+
+//     lineItems.forEach((item) => {
+//       if (item.materials && item.materials.length > 0) {
+//         item.materials.forEach((material) => {
+//           const key = material.name.toLowerCase().trim()
+
+//           if (materialsMap.has(key)) {
+//             // Add quantity to existing material
+//             const existing = materialsMap.get(key)
+//             existing.quantity += material.quantity
+//             existing.usedInItems.push({
+//               itemDescription: item.itemDescription,
+//               quantity: material.quantity,
+//             })
+//           } else {
+//             // Create new material entry
+//             materialsMap.set(key, {
+//               materialName: material.name,
+//               quantity: material.quantity,
+//               unit: '', // Can be derived from line item if needed
+//               tdsCertificate: item.TDS === 'yes' ? 'yes' : item.TDS === 'no' ? 'no' : 'Pending',
+//               samples: item.Samples === 'yes' ? 'yes' : item.Samples === 'no' ? 'no' : 'Pending',
+//               shopDrawing: item.shopDrawing || 'Not Required',
+//               usedInItems: [
+//                 {
+//                   itemDescription: item.itemDescription,
+//                   quantity: material.quantity,
+//                 },
+//               ],
+//             })
+//           }
+//         })
+//       }
+//     })
+
+//     // Convert map to array
+//     const uniqueMaterials = Array.from(materialsMap.values())
+
+//     res.json(uniqueMaterials)
+//   } catch (error) {
+//     res.status(500).json({ error: error.message })
+//   }
+// }
+// Get unique materials from all line items
+export const getUniqueMaterials = async (req, res) => {
+  try {
+    const { siteName } = req.query
+    const filter = siteName ? { siteName } : {}
+
+    const lineItems = await ProjectLineItem.find(filter, {
+      materials: 1,
+      shopDrawing: 1,
+      TDS: 1,
+      Samples: 1,
+      itemDescription: 1,
+    })
+
+    const materialsMap = new Map()
+
+    lineItems.forEach((item) => {
+      if (!item.materials || item.materials.length === 0) return
+
+      // Normalize status values
+      const tdsStatus = item.TDS === 'yes' ? 'yes' : item.TDS === 'no' ? 'no' : 'Pending'
+
+      const sampleStatus = item.Samples === 'yes' ? 'yes' : item.Samples === 'no' ? 'no' : 'Pending'
+
+      const shopDrawingStatus = item.shopDrawing || 'Not Required'
+
+      item.materials.forEach((material) => {
+        const materialName = material.name.toLowerCase().trim()
+
+        // 🔑 KEY = TDS + SAMPLE + SHOP + MATERIAL
+        const key = `${materialName}_${tdsStatus}_${sampleStatus}_${shopDrawingStatus}`
+
+        if (materialsMap.has(key)) {
+          const existing = materialsMap.get(key)
+          existing.quantity += material.quantity
+
+          existing.usedInItems.push({
+            itemDescription: item.itemDescription,
+            quantity: material.quantity,
+          })
+        } else {
+          materialsMap.set(key, {
+            materialName: material.name,
+            quantity: material.quantity,
+            unit: material.unit || '',
+            tdsCertificate: tdsStatus,
+            samples: sampleStatus,
+            shopDrawing: shopDrawingStatus,
+            usedInItems: [
+              {
+                itemDescription: item.itemDescription,
+                quantity: material.quantity,
+              },
+            ],
+          })
+        }
+      })
+    })
+
+    const uniqueMaterials = Array.from(materialsMap.values())
+    res.json(uniqueMaterials)
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

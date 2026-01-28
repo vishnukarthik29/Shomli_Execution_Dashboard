@@ -24,9 +24,9 @@ const server = app.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════════════════════╗
 ║  Project Execution Dashboard API Server                  ║
-║  Port: ${PORT}                                           ║
-║  Environment: ${process.env.NODE_ENV || 'development'}   ║
-║  Time: ${new Date().toISOString()}                       ║
+║  Port: ${PORT}                                              ║
+║  Environment: ${process.env.NODE_ENV || 'development'}                                ║
+║  Time: ${new Date().toISOString()}                          ║
 ╚══════════════════════════════════════════════════════════╝
   `)
 })

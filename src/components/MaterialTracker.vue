@@ -1,4 +1,3 @@
-<!-- components/Materialtracker.vue -->
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <!-- Back Button -->
@@ -52,7 +51,7 @@
 
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow p-4 mb-6" v-if="!loading">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
           <input
@@ -91,54 +90,28 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50 sticky top-0">
             <tr>
-              <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
-              >
-                S.NO
-              </th>
-              <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
-              >
+              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">S.NO</th>
+              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Category
               </th>
-              <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
-              >
+              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Item Description
               </th>
-              <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
-              >
+              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Quantity
               </th>
-              <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
-              >
-                Units
-              </th>
-              <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
-              >
-                Rate
-              </th>
-              <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
-              >
+              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
+              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rate</th>
+              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Amount
               </th>
-              <th
-                class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-normal"
-              >
+              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr
-              v-for="(item, index) in filteredLineItems"
-              :key="item._id"
-              :class="[isDelayed(item) ? 'bg-red-50' : '']"
-            >
+            <tr v-for="item in filteredLineItems" :key="item._id">
               <td class="px-3 py-4 whitespace-nowrap text-sm">{{ item.sno }}</td>
               <td class="px-3 py-4 text-sm">{{ item.category }}</td>
               <td class="px-3 py-4 text-sm">{{ item.itemDescription }}</td>
@@ -148,7 +121,6 @@
               <td class="px-3 py-4 whitespace-nowrap text-sm font-medium">
                 {{ formatCurrency(item.amount) }}
               </td>
-
               <td class="px-3 py-4 whitespace-nowrap text-sm">
                 <div class="flex gap-2">
                   <button
@@ -193,14 +165,14 @@
         No line items found matching your filters.
       </div>
     </div>
-    <!-- Edit Modal -->
+
     <!-- Edit Modal -->
     <div
       v-if="editingItem"
       class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50"
     >
       <div class="bg-white rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-        <!-- First Row: Title and All Action Buttons -->
+        <!-- Header -->
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-xl font-bold">Edit Line Item</h3>
 
@@ -236,7 +208,7 @@
           </div>
         </div>
 
-        <!-- Materials Table - Full Width -->
+        <!-- Materials Table -->
         <div class="w-full mb-6">
           <div class="border rounded-lg overflow-hidden">
             <table class="w-full divide-y divide-gray-200">
@@ -300,9 +272,11 @@
             </table>
           </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <!-- Shop Drawing Radio Buttons -->
-          <div class="w-full bg-gray-50 border border-gray-200 rounded-lg p-4">
+
+        <!-- Shop Drawing, TDS, Samples Radio Buttons -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Shop Drawing -->
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <label class="block text-sm font-medium text-gray-700 mb-3">Shop Drawing</label>
             <div class="flex gap-6">
               <label class="flex items-center cursor-pointer">
@@ -314,7 +288,6 @@
                 />
                 <span class="ml-2 text-sm text-gray-700">Internal</span>
               </label>
-
               <label class="flex items-center cursor-pointer">
                 <input
                   type="radio"
@@ -326,83 +299,57 @@
               </label>
             </div>
           </div>
-          <div class="w-full bg-gray-50 border border-gray-200 rounded-lg p-4">
+
+          <!-- TDS -->
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <label class="block text-sm font-medium text-gray-700 mb-3">TDS</label>
             <div class="flex gap-6">
               <label class="flex items-center cursor-pointer">
                 <input
                   type="radio"
                   v-model="editingItem.TDS"
-                  value="Internal"
+                  value="yes"
                   class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span class="ml-2 text-sm text-gray-700">yes</span>
+                <span class="ml-2 text-sm text-gray-700">Yes</span>
               </label>
-
               <label class="flex items-center cursor-pointer">
                 <input
                   type="radio"
                   v-model="editingItem.TDS"
-                  value="External"
+                  value="no"
                   class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span class="ml-2 text-sm text-gray-700">no</span>
+                <span class="ml-2 text-sm text-gray-700">No</span>
               </label>
             </div>
           </div>
-          <div class="w-full bg-gray-50 border border-gray-200 rounded-lg p-4">
+
+          <!-- Samples -->
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <label class="block text-sm font-medium text-gray-700 mb-3">Samples</label>
             <div class="flex gap-6">
               <label class="flex items-center cursor-pointer">
                 <input
                   type="radio"
                   v-model="editingItem.Samples"
-                  value="Internal"
+                  value="yes"
                   class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span class="ml-2 text-sm text-gray-700">yes</span>
+                <span class="ml-2 text-sm text-gray-700">Yes</span>
               </label>
-
               <label class="flex items-center cursor-pointer">
                 <input
                   type="radio"
                   v-model="editingItem.Samples"
-                  value="External"
+                  value="no"
                   class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span class="ml-2 text-sm text-gray-700">no</span>
+                <span class="ml-2 text-sm text-gray-700">No</span>
               </label>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    <!-- Description Modal -->
-    <div
-      v-if="showDescriptionModal"
-      class="fixed inset-0 bg-black/30 backdrop-blur-md overflow-y-auto flex items-center justify-center h-full w-full z-50"
-      @click="closeDescriptionModal"
-    >
-      <div
-        class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto"
-        @click.stop
-      >
-        <div class="flex justify-between items-start mb-4">
-          <h3 class="text-lg font-semibold">Item Description</h3>
-          <button @click="closeDescriptionModal" class="text-gray-500 hover:text-gray-700">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-        <p class="text-sm text-gray-700 whitespace-pre-wrap">
-          {{ selectedDescription }}
-        </p>
       </div>
     </div>
   </div>
@@ -410,7 +357,6 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import PhotoManager from '@/components/PhotoManager.vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 
@@ -419,16 +365,10 @@ const lineItems = ref([])
 const loading = ref(false)
 const error = ref(null)
 const editingItem = ref(null)
-const availableWeeks = ref([])
-const showInfo = ref(false)
-const showDescriptionModal = ref(false)
-const selectedDescription = ref('')
+
 const filters = ref({
   search: '',
   category: '',
-  materialStatus: '',
-  completionRange: '',
-  weekFilter: '',
 })
 
 const props = defineProps({
@@ -438,114 +378,7 @@ const props = defineProps({
   },
 })
 
-// Helper function to get Monday of a given date
-const getMonday = (date) => {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  const day = d.getDay()
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Adjust when day is Sunday
-  const monday = new Date(d.setDate(diff))
-  monday.setHours(0, 0, 0, 0)
-  return monday
-}
-
-// Helper function to get Saturday of a given week
-const getSaturday = (monday) => {
-  const saturday = new Date(monday)
-  saturday.setDate(monday.getDate() + 5) // Monday + 5 days = Saturday
-  saturday.setHours(23, 59, 59, 999)
-  return saturday
-}
-
-// Format date for comparison
-const formatDateKey = (date) => {
-  const d = new Date(date)
-  return d.toISOString().split('T')[0]
-}
-
-// Format date for display
-const formatWeekLabel = (monday, saturday) => {
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
-
-  const monDate = monday.getDate()
-  const monMonth = monthNames[monday.getMonth()]
-  const monYear = monday.getFullYear()
-
-  const satDate = saturday.getDate()
-  const satMonth = monthNames[saturday.getMonth()]
-  const satYear = saturday.getFullYear()
-
-  if (monYear === satYear && monMonth === satMonth) {
-    return `${monDate}-${satDate} ${monMonth} ${monYear}`
-  } else if (monYear === satYear) {
-    return `${monDate} ${monMonth} - ${satDate} ${satMonth} ${monYear}`
-  } else {
-    return `${monDate} ${monMonth} ${monYear} - ${satDate} ${satMonth} ${satYear}`
-  }
-}
-
-// Generate week options based on line items dates
-const generateWeekOptions = () => {
-  if (lineItems.value.length === 0) {
-    availableWeeks.value = []
-    return
-  }
-
-  const weeksMap = new Map()
-
-  lineItems.value.forEach((item) => {
-    if (item.startDate) {
-      const startDate = new Date(item.startDate)
-      const monday = getMonday(startDate)
-      const saturday = getSaturday(monday)
-
-      const weekKey = `${formatDateKey(monday)}_${formatDateKey(saturday)}`
-
-      if (!weeksMap.has(weekKey)) {
-        weeksMap.set(weekKey, {
-          value: weekKey,
-          label: formatWeekLabel(monday, saturday),
-          sortDate: monday.getTime(),
-        })
-      }
-    }
-
-    // Also check end dates
-    if (item.endDate) {
-      const endDate = new Date(item.endDate)
-      const monday = getMonday(endDate)
-      const saturday = getSaturday(monday)
-
-      const weekKey = `${formatDateKey(monday)}_${formatDateKey(saturday)}`
-
-      if (!weeksMap.has(weekKey)) {
-        weeksMap.set(weekKey, {
-          value: weekKey,
-          label: formatWeekLabel(monday, saturday),
-          sortDate: monday.getTime(),
-        })
-      }
-    }
-  })
-
-  // Sort weeks by date (most recent first)
-  availableWeeks.value = Array.from(weeksMap.values()).sort((a, b) => b.sortDate - a.sortDate)
-}
-
-// Computed: Unique categories for filter dropdown
+// Computed: Unique categories
 const uniqueCategories = computed(() => {
   const categories = lineItems.value.map((item) => item.category)
   return [...new Set(categories)].sort()
@@ -555,7 +388,6 @@ const uniqueCategories = computed(() => {
 const filteredLineItems = computed(() => {
   let filtered = [...lineItems.value]
 
-  // Search filter
   if (filters.value.search) {
     const searchLower = filters.value.search.toLowerCase()
     filtered = filtered.filter(
@@ -566,102 +398,11 @@ const filteredLineItems = computed(() => {
     )
   }
 
-  // Category filter
   if (filters.value.category) {
     filtered = filtered.filter((item) => item.category === filters.value.category)
   }
 
-  // Material status filter
-  if (filters.value.materialStatus) {
-    filtered = filtered.filter((item) => item.materialStatus === filters.value.materialStatus)
-  }
-
-  // Completion range filter
-  if (filters.value.completionRange) {
-    const [min, max] = filters.value.completionRange.split('-').map(Number)
-    filtered = filtered.filter((item) => {
-      const completion = item.workCompletionPercentage || 0
-      return completion >= min && completion <= max
-    })
-  }
-
-  // Week filter (Monday to Saturday)
-  if (filters.value.weekFilter) {
-    const [weekStartStr, weekEndStr] = filters.value.weekFilter.split('_')
-    const weekStart = new Date(weekStartStr)
-    weekStart.setHours(0, 0, 0, 0)
-    const weekEnd = new Date(weekEndStr)
-    weekEnd.setHours(23, 59, 59, 999)
-
-    filtered = filtered.filter((item) => {
-      if (!item.startDate) return false
-
-      const startDate = new Date(item.startDate)
-      startDate.setHours(0, 0, 0, 0)
-
-      const endDate = item.endDate ? new Date(item.endDate) : null
-      if (endDate) endDate.setHours(23, 59, 59, 999)
-
-      // Check if start date is within the week
-      const startInWeek = startDate >= weekStart && startDate <= weekEnd
-
-      // Check if end date is within the week
-      const endInWeek = endDate && endDate >= weekStart && endDate <= weekEnd
-
-      // Check if the item's date range completely contains the week
-      const weekWithinItem = endDate && weekStart >= startDate && weekEnd <= endDate
-
-      // Check if there's any overlap between item dates and week
-      const hasOverlap = endDate && startDate <= weekEnd && endDate >= weekStart
-
-      return startInWeek || endInWeek || weekWithinItem || hasOverlap
-    })
-  }
-
   return filtered
-})
-
-// Computed: Statistics
-const statistics = computed(() => {
-  const items = filteredLineItems.value
-
-  const totalItems = items.length
-  const deliveredCount = items.filter(
-    (item) => item.materialStatus === 'Intialized/Delivered',
-  ).length
-  const deliveredPercentage = totalItems > 0 ? Math.round((deliveredCount / totalItems) * 100) : 0
-
-  const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0)
-  const completedAmount = items.reduce((sum, item) => sum + (item.workCompletionAmount || 0), 0)
-
-  // Calculate overall completion based on amount ratio (matching backend logic)
-  const overallCompletion =
-    totalAmount > 0 ? Number(((completedAmount / totalAmount) * 100).toFixed(2)) : 0
-
-  // Count items where material is not delivered and item is delayed (end date passed)
-  const materialNotDeliveredCount = items.filter((item) => {
-    return isDelayed(item) && item.materialStatus === 'Not Delivered'
-  }).length
-
-  // Count items where material is delivered but work is not 100% complete
-  const deliveredIncompleteCount = items.filter((item) => {
-    return (
-      isDelayed(item) &&
-      item.materialStatus === 'Intialized/Delivered' &&
-      (item.workCompletionPercentage || 0) < 100
-    )
-  }).length
-
-  return {
-    totalItems,
-    deliveredCount,
-    deliveredPercentage,
-    overallCompletion,
-    totalAmount,
-    completedAmount,
-    materialNotDeliveredCount,
-    deliveredIncompleteCount,
-  }
 })
 
 const fetchLineItems = async () => {
@@ -673,7 +414,6 @@ const fetchLineItems = async () => {
     const params = siteName ? { siteName } : {}
     const response = await axios.get(`${props.apiBaseUrl}/line-items/site`, { params })
     lineItems.value = response.data
-    generateWeekOptions()
   } catch (err) {
     error.value = err.response?.data?.error || 'Failed to fetch line items'
     console.error('Error fetching line items:', err)
@@ -690,57 +430,20 @@ const formatCurrency = (value) => {
   }).format(value || 0)
 }
 
-const formatDate = (date) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-const formatDateTime = (date) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const formatFieldName = (field) => {
-  const fieldNames = {
-    quantity: 'Quantity',
-    workStatusInUnits: 'Work Status (Units)',
-    materialStatus: 'Material Status',
-  }
-  return fieldNames[field] || field
-}
-
-const formatHistoryValue = (field, value) => {
-  if (value === null || value === undefined) return 'N/A'
-  if (field === 'materialStatus') return value
-  return value.toString()
-}
-
 const clearFilters = () => {
   filters.value = {
     search: '',
     category: '',
-    materialStatus: '',
-    completionRange: '',
-    weekFilter: '',
   }
 }
 
 const openEditModal = (item) => {
   editingItem.value = {
     ...item,
-    startDate: item.startDate ? item.startDate.split('T')[0] : '',
-    endDate: item.endDate ? item.endDate.split('T')[0] : '',
     materials: item.materials && item.materials.length > 0 ? [...item.materials] : [],
+    shopDrawing: item.shopDrawing || null,
+    TDS: item.TDS || null,
+    Samples: item.Samples || null,
   }
 }
 
@@ -762,17 +465,29 @@ const removeMaterialRow = (index) => {
 
 const updateLineItem = async () => {
   loading.value = true
+  error.value = null
+
   try {
+    const payload = {
+      materials: editingItem.value.materials || [],
+      shopDrawing: editingItem.value.shopDrawing,
+      TDS: editingItem.value.TDS,
+      Samples: editingItem.value.Samples,
+    }
+
     const response = await axios.put(
       `${props.apiBaseUrl}/line-items/${editingItem.value._id}`,
-      editingItem.value,
+      payload,
     )
+
     if (response.status === 200) {
       await fetchLineItems()
       editingItem.value = null
+      error.value = null
     }
   } catch (err) {
     error.value = err.response?.data?.error || 'Failed to update line item'
+    console.error('Error updating line item:', err)
   } finally {
     loading.value = false
   }
@@ -788,62 +503,6 @@ const deleteItem = async (id) => {
     error.value = err.response?.data?.error || 'Failed to delete item'
   }
 }
-
-// Check if item is delayed (end date passed but not 100% complete)
-const isDelayed = (item) => {
-  if (!item.endDate) return false
-  const endDate = new Date(item.endDate)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  endDate.setHours(0, 0, 0, 0)
-
-  return endDate < today && (item.workCompletionPercentage || 0) < 100
-}
-
-// photos start
-const photoState = ref({
-  open: false,
-  lineItemId: null,
-  itemData: null,
-})
-
-const ASSET_BASE_URL = props.apiBaseUrl
-
-const openPhotos = (item) => {
-  photoState.value = {
-    open: true,
-    lineItemId: item._id,
-    itemData: item,
-  }
-}
-
-const openDescriptionModal = (item) => {
-  selectedDescription.value = item.itemDescription
-  showDescriptionModal.value = true
-}
-
-const closeDescriptionModal = () => {
-  showDescriptionModal.value = false
-  selectedDescription.value = ''
-}
-
-const closePhotos = () => {
-  photoState.value = {
-    open: false,
-    lineItemId: null,
-    itemData: null,
-  }
-}
-
-const handlePhotosUpdated = () => {
-  console.log('Photos updated - refresh your data')
-  fetchLineItems()
-}
-
-const handleError = (errorMsg) => {
-  error.value = errorMsg
-}
-// photos end
 
 onMounted(() => {
   fetchLineItems()

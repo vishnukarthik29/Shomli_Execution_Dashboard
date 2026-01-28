@@ -129,29 +129,31 @@
               </td>
 
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span
+                <button
+                  @click="handleSampleClick(item)"
+                  class="px-2 py-1 text-xs font-semibold rounded-full"
                   :class="{
                     'bg-green-100 text-green-800': item.samples === 'yes',
                     'bg-blue-100 text-blue-800': item.samples === 'Submitted',
                     'bg-yellow-100 text-yellow-800': item.samples === 'no',
                     'bg-red-100 text-red-800': item.samples === 'Rejected',
                   }"
-                  class="px-2 py-1 text-xs font-semibold rounded-full"
                 >
                   {{ item.samples }}
-                </span>
+                </button>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span
+                <button
+                  @click="handleShopDrawingClick(item)"
+                  class="px-2 py-1 text-xs font-semibold rounded-full"
                   :class="{
                     'bg-purple-100 text-purple-800': item.shopDrawing === 'Internal',
                     'bg-indigo-100 text-indigo-800': item.shopDrawing === 'External',
                     'bg-gray-100 text-gray-800': item.shopDrawing === 'Not Required',
                   }"
-                  class="px-2 py-1 text-xs font-semibold rounded-full"
                 >
                   {{ item.shopDrawing }}
-                </span>
+                </button>
               </td>
               <td class="px-6 py-4 text-sm">
                 <button
@@ -209,6 +211,18 @@
       @close="showTdsModal = false"
       @send="handleSendMail"
     />
+    <Sample
+      :show="showSampleModal"
+      :material="selectedMaterial"
+      @close="showSampleModal = false"
+      @submit="handleSampleSubmit"
+    />
+    <ShopDrawing
+      :show="showShopDrawingModal"
+      :material="selectedMaterial"
+      @close="showShopDrawingModal = false"
+      @submit="handleShopDrawingSubmit"
+    />
   </div>
 </template>
 
@@ -216,6 +230,8 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import TDSCertificate from './TDSCertificate.vue'
+import Sample from './Sample.vue'
+import ShopDrawing from './ShopDrawing.vue'
 
 const props = defineProps({
   apiBaseUrl: {
@@ -224,6 +240,8 @@ const props = defineProps({
   },
 })
 const showTdsModal = ref(false)
+const showSampleModal = ref(false)
+const showShopDrawingModal = ref(false)
 const selectedMaterial = ref(null)
 const activeTab = ref('mail')
 
@@ -297,6 +315,19 @@ const handleTdsClick = (item) => {
   selectedMaterial.value = item
   showTdsModal.value = true
 }
+const handleSampleClick = (item) => {
+  if (item.samples !== 'yes') return
+
+  selectedMaterial.value = item
+  showSampleModal.value = true
+}
+const handleShopDrawingClick = (item) => {
+  if (item.shopDrawing === 'Not Required') return
+
+  selectedMaterial.value = item
+  showShopDrawingModal.value = true
+}
+
 const handleSendMail = async (payload) => {
   const formData = new FormData()
 

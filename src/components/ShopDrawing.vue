@@ -8,7 +8,7 @@
       <!-- Header -->
       <div class="flex justify-between items-center px-6 py-4 border-b">
         <div>
-          <h2 class="text-lg font-bold text-gray-800">TDS Certificate</h2>
+          <h2 class="text-lg font-bold text-gray-800">Shop Drawing</h2>
           <p class="text-sm text-gray-500">
             {{ material?.materialName }}
           </p>

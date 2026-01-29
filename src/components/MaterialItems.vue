@@ -48,10 +48,8 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All</option>
-            <option value="Submitted">Submitted</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
           </select>
         </div>
 
@@ -98,9 +96,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Samples
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Shop Drawing
-              </th>
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Used In
               </th>
@@ -119,9 +115,8 @@
                   class="px-2 py-1 text-xs font-semibold rounded-full"
                   :class="{
                     'bg-green-100 text-green-800': item.tdsCertificate === 'yes',
-                    'bg-blue-100 text-blue-800': item.tdsCertificate === 'Submitted',
+
                     'bg-yellow-100 text-yellow-800': item.tdsCertificate === 'no',
-                    'bg-red-100 text-red-800': item.tdsCertificate === 'Rejected',
                   }"
                 >
                   {{ item.tdsCertificate }}
@@ -134,27 +129,14 @@
                   class="px-2 py-1 text-xs font-semibold rounded-full"
                   :class="{
                     'bg-green-100 text-green-800': item.samples === 'yes',
-                    'bg-blue-100 text-blue-800': item.samples === 'Submitted',
+
                     'bg-yellow-100 text-yellow-800': item.samples === 'no',
-                    'bg-red-100 text-red-800': item.samples === 'Rejected',
                   }"
                 >
                   {{ item.samples }}
                 </button>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <button
-                  @click="handleShopDrawingClick(item)"
-                  class="px-2 py-1 text-xs font-semibold rounded-full"
-                  :class="{
-                    'bg-purple-100 text-purple-800': item.shopDrawing === 'Internal',
-                    'bg-indigo-100 text-indigo-800': item.shopDrawing === 'External',
-                    'bg-gray-100 text-gray-800': item.shopDrawing === 'Not Required',
-                  }"
-                >
-                  {{ item.shopDrawing }}
-                </button>
-              </td>
+
               <td class="px-6 py-4 text-sm">
                 <button
                   @click="toggleExpanded(index)"
@@ -217,12 +199,6 @@
       @close="showSampleModal = false"
       @submit="handleSampleSubmit"
     />
-    <ShopDrawing
-      :show="showShopDrawingModal"
-      :material="selectedMaterial"
-      @close="showShopDrawingModal = false"
-      @submit="handleShopDrawingSubmit"
-    />
   </div>
 </template>
 
@@ -231,7 +207,6 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import TDSCertificate from './TDSCertificate.vue'
 import Sample from './Sample.vue'
-import ShopDrawing from './ShopDrawing.vue'
 
 const props = defineProps({
   apiBaseUrl: {
@@ -241,7 +216,7 @@ const props = defineProps({
 })
 const showTdsModal = ref(false)
 const showSampleModal = ref(false)
-const showShopDrawingModal = ref(false)
+
 const selectedMaterial = ref(null)
 const activeTab = ref('mail')
 
@@ -320,12 +295,6 @@ const handleSampleClick = (item) => {
 
   selectedMaterial.value = item
   showSampleModal.value = true
-}
-const handleShopDrawingClick = (item) => {
-  if (item.shopDrawing === 'Not Required') return
-
-  selectedMaterial.value = item
-  showShopDrawingModal.value = true
 }
 
 const handleSendMail = async (payload) => {

@@ -1,4 +1,17 @@
 import ProjectLineItem from '../models/ProjectLineItem.js'
+import { sendTDSEmail } from '../services/emailService.js'
+
+const parseAndValidateEmails = (emails) => {
+  if (!emails) return []
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  return emails
+    .split(',')
+    .map((e) => e.trim())
+    .filter((e) => e.length > 0)
+    .filter((e) => emailRegex.test(e))
+}
 
 // Get dashboard summary
 export const getSummary = async (req, res) => {
@@ -299,100 +312,42 @@ export const deleteLineItem = async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 }
-// // Get unique materials from all line items
-// export const getUniqueMaterials = async (req, res) => {
-//   try {
-//     const { siteName } = req.query
-//     const filter = siteName ? { siteName } : {}
 
-//     const lineItems = await ProjectLineItem.find(filter, {
-//       materials: 1,
-//       shopDrawing: 1,
-//       TDS: 1,
-//       Samples: 1,
-//       itemDescription: 1,
-//     })
-
-//     // Create a map to track unique materials
-//     const materialsMap = new Map()
-
-//     lineItems.forEach((item) => {
-//       if (item.materials && item.materials.length > 0) {
-//         item.materials.forEach((material) => {
-//           const key = material.name.toLowerCase().trim()
-
-//           if (materialsMap.has(key)) {
-//             // Add quantity to existing material
-//             const existing = materialsMap.get(key)
-//             existing.quantity += material.quantity
-//             existing.usedInItems.push({
-//               itemDescription: item.itemDescription,
-//               quantity: material.quantity,
-//             })
-//           } else {
-//             // Create new material entry
-//             materialsMap.set(key, {
-//               materialName: material.name,
-//               quantity: material.quantity,
-//               unit: '', // Can be derived from line item if needed
-//               tdsCertificate: item.TDS === 'yes' ? 'yes' : item.TDS === 'no' ? 'no' : 'Pending',
-//               samples: item.Samples === 'yes' ? 'yes' : item.Samples === 'no' ? 'no' : 'Pending',
-//               shopDrawing: item.shopDrawing || 'Not Required',
-//               usedInItems: [
-//                 {
-//                   itemDescription: item.itemDescription,
-//                   quantity: material.quantity,
-//                 },
-//               ],
-//             })
-//           }
-//         })
-//       }
-//     })
-
-//     // Convert map to array
-//     const uniqueMaterials = Array.from(materialsMap.values())
-
-//     res.json(uniqueMaterials)
-//   } catch (error) {
-//     res.status(500).json({ error: error.message })
-//   }
-// }
-// Get unique materials from all line items
+// controllers/projectController.js
 export const getUniqueMaterials = async (req, res) => {
   try {
     const { siteName } = req.query
     const filter = siteName ? { siteName } : {}
 
-    const lineItems = await ProjectLineItem.find(filter, {
-      materials: 1,
-      shopDrawing: 1,
-      TDS: 1,
-      Samples: 1,
-      itemDescription: 1,
-    })
+    const lineItems = await ProjectLineItem.find(filter)
+      .populate('materials.materialId', 'name unit category')
+      .select('materials itemDescription')
 
     const materialsMap = new Map()
 
     lineItems.forEach((item) => {
       if (!item.materials || item.materials.length === 0) return
 
-      // Normalize status values
-      const tdsStatus = item.TDS === 'yes' ? 'yes' : item.TDS === 'no' ? 'no' : 'Pending'
-
-      const sampleStatus = item.Samples === 'yes' ? 'yes' : item.Samples === 'no' ? 'no' : 'Pending'
-
-      const shopDrawingStatus = item.shopDrawing || 'Not Required'
-
       item.materials.forEach((material) => {
-        const materialName = material.name.toLowerCase().trim()
+        if (!material.materialId) return
 
-        // 🔑 KEY = TDS + SAMPLE + SHOP + MATERIAL
-        const key = `${materialName}_${tdsStatus}_${sampleStatus}_${shopDrawingStatus}`
+        // ✅ UNIQUE KEY = materialId ONLY
+        const key = material.materialId._id.toString()
+
+        const tdsStatus = material.TDS === 'yes' ? 'yes' : material.TDS === 'no' ? 'no' : 'Pending'
+
+        const sampleStatus =
+          material.Samples === 'yes' ? 'yes' : material.Samples === 'no' ? 'no' : 'Pending'
 
         if (materialsMap.has(key)) {
           const existing = materialsMap.get(key)
+
+          // Add quantity
           existing.quantity += material.quantity
+
+          // If ANY item is pending/yes/no, keep most "critical" state
+          if (tdsStatus === 'Pending') existing.tdsCertificate = 'Pending'
+          if (sampleStatus === 'Pending') existing.samples = 'Pending'
 
           existing.usedInItems.push({
             itemDescription: item.itemDescription,
@@ -400,12 +355,12 @@ export const getUniqueMaterials = async (req, res) => {
           })
         } else {
           materialsMap.set(key, {
-            materialName: material.name,
+            materialName: material.materialId.name,
+            materialId: material.materialId._id,
             quantity: material.quantity,
-            unit: material.unit || '',
+            unit: material.unit || material.materialId.unit || '',
             tdsCertificate: tdsStatus,
             samples: sampleStatus,
-            shopDrawing: shopDrawingStatus,
             usedInItems: [
               {
                 itemDescription: item.itemDescription,
@@ -421,6 +376,96 @@ export const getUniqueMaterials = async (req, res) => {
     res.json(uniqueMaterials)
   } catch (error) {
     res.status(500).json({ error: error.message })
+  }
+}
+
+export const sendTDSMail = async (req, res) => {
+  try {
+    const { to, subject, content, materialName } = req.body
+    const ccList = parseAndValidateEmails(req.body.cc)
+
+    const file = req.file
+
+    // Validate required fields
+    if (!to || !subject || !content || !materialName) {
+      return res.status(400).json({
+        error: 'Missing required fields: to, subject, content, materialName',
+      })
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(to)) {
+      return res.status(400).json({ error: 'Invalid email address' })
+    }
+
+    // Calculate file size before sending
+    let fileSizeMB = 0
+    let fileName = ''
+    if (file) {
+      fileSizeMB = parseFloat((file.size / (1024 * 1024)).toFixed(2))
+      fileName = file.originalname
+    }
+
+    // Send email with size validation
+    const emailResult = await sendTDSEmail({
+      to,
+      cc: ccList,
+      subject,
+      content,
+      file,
+      materialName,
+    })
+
+    // Find all line items with this material and update their TDS mail history
+    const lineItems = await ProjectLineItem.find({
+      'materials.materialName': materialName,
+    })
+
+    const mailRecord = {
+      to,
+      cc: ccList?.length ? ccList : undefined,
+
+      subject,
+      content,
+      attachmentName: emailResult.attachmentName || fileName,
+      attachmentSizeMB: emailResult.attachmentSizeMB || fileSizeMB,
+      attachmentSent: emailResult.attachmentSent,
+      attachmentSkippedReason: emailResult.attachmentSkippedReason || null,
+      fileUrl: file ? `/uploads/tds/${file.filename}` : null, // If you're storing files
+      sentAt: new Date(),
+    }
+
+    // Update all matching materials across all line items
+    for (const lineItem of lineItems) {
+      for (const material of lineItem.materials) {
+        if (material.materialName === materialName) {
+          if (!material.tdsMailHistory) {
+            material.tdsMailHistory = []
+          }
+          material.tdsMailHistory.push(mailRecord)
+        }
+      }
+      await lineItem.save()
+    }
+
+    res.json({
+      success: true,
+      message: 'Email sent successfully',
+      details: {
+        messageId: emailResult.messageId,
+        attachmentSent: emailResult.attachmentSent,
+        attachmentSizeMB: emailResult.attachmentSizeMB,
+        attachmentSkippedReason: emailResult.attachmentSkippedReason,
+      },
+      mailRecord,
+    })
+  } catch (error) {
+    console.error('Send TDS mail error:', error)
+    res.status(500).json({
+      error: 'Failed to send email',
+      details: error.message,
+    })
   }
 }
 

@@ -108,10 +108,14 @@ const projectLineItemSchema = new mongoose.Schema(
         uploadedAt: { type: Date, default: Date.now },
       },
     ],
-    // NEW FIELDS
     materials: [
       {
-        name: {
+        materialId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Material',
+          required: true,
+        },
+        materialName: {
           type: String,
           required: true,
         },
@@ -120,6 +124,30 @@ const projectLineItemSchema = new mongoose.Schema(
           required: true,
           default: 0,
         },
+        TDS: {
+          type: String,
+          enum: ['yes', 'no', null],
+          default: null,
+        },
+        Samples: {
+          type: String,
+          enum: ['yes', 'no', null],
+          default: null,
+        },
+        tdsMailHistory: [
+          {
+            to: { type: String, required: true },
+            cc: { type: String },
+            subject: { type: String, required: true },
+            content: { type: String, required: true },
+            attachmentName: { type: String },
+            attachmentSizeMB: { type: Number },
+            attachmentSent: { type: Boolean, default: false },
+            attachmentSkippedReason: { type: String },
+            fileUrl: { type: String },
+            sentAt: { type: Date, default: Date.now },
+          },
+        ],
         addedAt: {
           type: Date,
           default: Date.now,
@@ -129,16 +157,6 @@ const projectLineItemSchema = new mongoose.Schema(
     shopDrawing: {
       type: String,
       enum: ['Internal', 'External', null],
-      default: null,
-    },
-    TDS: {
-      type: String,
-      enum: ['yes', 'no', null],
-      default: null,
-    },
-    Samples: {
-      type: String,
-      enum: ['yes', 'no', null],
       default: null,
     },
   },

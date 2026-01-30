@@ -379,45 +379,123 @@ export const getUniqueMaterials = async (req, res) => {
   }
 }
 
+// export const sendTDSMail = async (req, res) => {
+//   try {
+//     const { to, subject, content, materialName } = req.body
+//     const ccList = parseAndValidateEmails(req.body.cc)
+
+//     const file = req.file
+
+//     // Validate required fields
+//     if (!to || !subject || !content || !materialName) {
+//       return res.status(400).json({
+//         error: 'Missing required fields: to, subject, content, materialName',
+//       })
+//     }
+
+//     // Validate email format
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+//     if (!emailRegex.test(to)) {
+//       return res.status(400).json({ error: 'Invalid email address' })
+//     }
+
+//     // Calculate file size before sending
+//     let fileSizeMB = 0
+//     let fileName = ''
+//     if (file) {
+//       fileSizeMB = parseFloat((file.size / (1024 * 1024)).toFixed(2))
+//       fileName = file.originalname
+//     }
+
+//     // Send email with size validation
+//     const emailResult = await sendTDSEmail({
+//       to,
+//       cc: ccList,
+//       subject,
+//       content,
+//       file,
+//       materialName,
+//     })
+
+//     // Find all line items with this material and update their TDS mail history
+//     const lineItems = await ProjectLineItem.find({
+//       'materials.materialName': materialName,
+//     })
+
+//     const mailRecord = {
+//       to,
+//       cc: ccList?.length ? ccList : undefined,
+
+//       subject,
+//       content,
+//       attachmentName: emailResult.attachmentName || fileName,
+//       attachmentSizeMB: emailResult.attachmentSizeMB || fileSizeMB,
+//       attachmentSent: emailResult.attachmentSent,
+//       attachmentSkippedReason: emailResult.attachmentSkippedReason || null,
+//       fileUrl: file ? `/uploads/tds/${file.filename}` : null, // If you're storing files
+//       sentAt: new Date(),
+//     }
+
+//     // Update all matching materials across all line items
+//     for (const lineItem of lineItems) {
+//       for (const material of lineItem.materials) {
+//         if (material.materialName === materialName) {
+//           if (!material.tdsMailHistory) {
+//             material.tdsMailHistory = []
+//           }
+//           material.tdsMailHistory.push(mailRecord)
+//         }
+//       }
+//       await lineItem.save()
+//     }
+
+//     res.json({
+//       success: true,
+//       message: 'Email sent successfully',
+//       details: {
+//         messageId: emailResult.messageId,
+//         attachmentSent: emailResult.attachmentSent,
+//         attachmentSizeMB: emailResult.attachmentSizeMB,
+//         attachmentSkippedReason: emailResult.attachmentSkippedReason,
+//       },
+//       mailRecord,
+//     })
+//   } catch (error) {
+//     console.error('Send TDS mail error:', error)
+//     res.status(500).json({
+//       error: 'Failed to send email',
+//       details: error.message,
+//     })
+//   }
+// }
 export const sendTDSMail = async (req, res) => {
   try {
     const { to, subject, content, materialName } = req.body
     const ccList = parseAndValidateEmails(req.body.cc)
+    const files = req.files || [] // Array of files
 
-    const file = req.file
-
-    // Validate required fields
     if (!to || !subject || !content || !materialName) {
       return res.status(400).json({
         error: 'Missing required fields: to, subject, content, materialName',
       })
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(to)) {
       return res.status(400).json({ error: 'Invalid email address' })
     }
 
-    // Calculate file size before sending
-    let fileSizeMB = 0
-    let fileName = ''
-    if (file) {
-      fileSizeMB = parseFloat((file.size / (1024 * 1024)).toFixed(2))
-      fileName = file.originalname
-    }
-
-    // Send email with size validation
+    // Send email with multiple files
     const emailResult = await sendTDSEmail({
       to,
       cc: ccList,
       subject,
       content,
-      file,
+      files, // Pass all files
       materialName,
     })
 
-    // Find all line items with this material and update their TDS mail history
+    // Find all line items with this material
     const lineItems = await ProjectLineItem.find({
       'materials.materialName': materialName,
     })
@@ -425,18 +503,13 @@ export const sendTDSMail = async (req, res) => {
     const mailRecord = {
       to,
       cc: ccList?.length ? ccList : undefined,
-
       subject,
       content,
-      attachmentName: emailResult.attachmentName || fileName,
-      attachmentSizeMB: emailResult.attachmentSizeMB || fileSizeMB,
-      attachmentSent: emailResult.attachmentSent,
-      attachmentSkippedReason: emailResult.attachmentSkippedReason || null,
-      fileUrl: file ? `/uploads/tds/${file.filename}` : null, // If you're storing files
+      attachments: emailResult.attachments, // Array of attachment details
       sentAt: new Date(),
     }
 
-    // Update all matching materials across all line items
+    // Update all matching materials
     for (const lineItem of lineItems) {
       for (const material of lineItem.materials) {
         if (material.materialName === materialName) {
@@ -454,9 +527,9 @@ export const sendTDSMail = async (req, res) => {
       message: 'Email sent successfully',
       details: {
         messageId: emailResult.messageId,
-        attachmentSent: emailResult.attachmentSent,
-        attachmentSizeMB: emailResult.attachmentSizeMB,
-        attachmentSkippedReason: emailResult.attachmentSkippedReason,
+        attachmentsSent: emailResult.attachmentsSent,
+        attachmentsSkipped: emailResult.attachmentsSkipped,
+        totalFiles: files.length,
       },
       mailRecord,
     })
@@ -464,6 +537,49 @@ export const sendTDSMail = async (req, res) => {
     console.error('Send TDS mail error:', error)
     res.status(500).json({
       error: 'Failed to send email',
+      details: error.message,
+    })
+  }
+}
+// Add this new controller function in projectController.js
+
+export const getTDSMailHistory = async (req, res) => {
+  try {
+    const { materialName } = req.query
+
+    if (!materialName) {
+      return res.status(400).json({ error: 'materialName is required' })
+    }
+
+    // Find all line items that contain this material
+    const lineItems = await ProjectLineItem.find({
+      'materials.materialName': materialName,
+    }).select('materials')
+
+    // Extract all mail history for this specific material
+    const allMailHistory = []
+
+    lineItems.forEach((lineItem) => {
+      lineItem.materials.forEach((material) => {
+        if (material.materialName === materialName && material.tdsMailHistory) {
+          allMailHistory.push(...material.tdsMailHistory)
+        }
+      })
+    })
+
+    // Sort by date (newest first) and remove duplicates
+    const uniqueMailHistory = allMailHistory
+      .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))
+      .filter(
+        (mail, index, self) =>
+          index === self.findIndex((m) => m.sentAt.getTime() === mail.sentAt.getTime()),
+      )
+
+    res.json(uniqueMailHistory)
+  } catch (error) {
+    console.error('Get TDS mail history error:', error)
+    res.status(500).json({
+      error: 'Failed to fetch mail history',
       details: error.message,
     })
   }

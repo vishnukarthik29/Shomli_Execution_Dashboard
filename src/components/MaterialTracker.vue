@@ -441,7 +441,7 @@
     <!-- Add Material Modal -->
     <div
       v-if="showAddMaterialModal"
-      class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
+      class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-60"
       @click.self="closeAddMaterialModal"
     >
       <div class="bg-white rounded-lg p-6 max-w-md w-full">

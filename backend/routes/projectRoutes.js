@@ -37,7 +37,8 @@ const emailupload = multer({
   // NO fileFilter = Accept ALL file types
 })
 
-router.post('/materials/send-tds-mail', emailupload.single('file'), sendTDSMail)
+// Use .array() instead of .single() for multiple files
+router.post('/materials/send-tds-mail', emailupload.array('files', 10), sendTDSMail)
 // Dashboard & summary routes
 router.get('/dashboard/summary', projectController.getSummary)
 router.get('/sites', projectController.getSites)
@@ -58,6 +59,7 @@ router.post('/upload/photos', upload.array('photos', 10), uploadController.uploa
 router.get('/line-items/:id/photos', uploadController.getLineItemPhotos)
 
 router.delete('/upload/photos', uploadController.deletePhoto)
+router.get('/materials/tds-mail-history', projectController.getTDSMailHistory)
 
 router.get('/materials/unique', projectController.getUniqueMaterials)
 

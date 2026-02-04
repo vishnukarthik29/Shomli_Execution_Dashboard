@@ -50,19 +50,20 @@
             <option value="">All</option>
             <option value="yes">Yes</option>
             <option value="no">No</option>
+            <option value="Pending">Pending</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Shop Drawing</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Samples</label>
           <select
-            v-model="filters.shopDrawing"
+            v-model="filters.samples"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All</option>
-            <option value="Internal">Internal</option>
-            <option value="External">External</option>
-            <option value="Not Required">Not Required</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+            <option value="Pending">Pending</option>
           </select>
         </div>
       </div>
@@ -96,86 +97,115 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Samples
               </th>
-
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Used In
+                Used In Items
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Actions
               </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="(item, index) in filteredMaterials" :key="index">
-              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ index + 1 }}</td>
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ item.materialName }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                {{ item.quantity.toFixed(2) }} {{ item.unit }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <button
-                  @click="handleTdsClick(item)"
-                  class="px-2 py-1 text-xs font-semibold rounded-full"
-                  :class="{
-                    'bg-green-100 text-green-800': item.tdsCertificate === 'yes',
-
-                    'bg-yellow-100 text-yellow-800': item.tdsCertificate === 'no',
-                  }"
-                >
-                  {{ item.tdsCertificate }}
-                </button>
-              </td>
-
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <button
-                  @click="handleSampleClick(item)"
-                  class="px-2 py-1 text-xs font-semibold rounded-full"
-                  :class="{
-                    'bg-green-100 text-green-800': item.samples === 'yes',
-
-                    'bg-yellow-100 text-yellow-800': item.samples === 'no',
-                  }"
-                >
-                  {{ item.samples }}
-                </button>
-              </td>
-
-              <td class="px-6 py-4 text-sm">
-                <button
-                  @click="toggleExpanded(index)"
-                  class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                >
-                  <span>{{ item.usedInItems.length }} items</span>
-                  <svg
-                    class="w-4 h-4 transition-transform"
-                    :class="{ 'rotate-180': expandedRow === index }"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+            <template v-for="(item, index) in filteredMaterials" :key="index">
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm">{{ index + 1 }}</td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ item.materialName }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  {{ item.quantity.toFixed(2) }} {{ item.unit }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <button
+                    @click="handleTdsClick(item)"
+                    class="px-2 py-1 text-xs font-semibold rounded-full cursor-pointer"
+                    :class="{
+                      'bg-green-100 text-green-800': item.tdsCertificate === 'yes',
+                      'bg-red-100 text-red-800': item.tdsCertificate === 'no',
+                      'bg-yellow-100 text-yellow-800': item.tdsCertificate === 'Pending',
+                    }"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-              </td>
-            </tr>
-            <!-- Expanded Row Details -->
-            <tr v-if="expandedRow === index" :key="`expanded-${index}`">
-              <td colspan="7" class="px-6 py-4 bg-gray-50">
-                <div class="space-y-2">
-                  <p class="text-sm font-medium text-gray-700 mb-2">Used in following items:</p>
-                  <div
-                    v-for="(usage, usageIndex) in item.usedInItems"
-                    :key="usageIndex"
-                    class="text-sm text-gray-600 pl-4"
+                    {{ item.tdsCertificate }}
+                  </button>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <button
+                    @click="handleSampleClick(item)"
+                    class="px-2 py-1 text-xs font-semibold rounded-full cursor-pointer"
+                    :class="{
+                      'bg-green-100 text-green-800': item.samples === 'yes',
+                      'bg-red-100 text-red-800': item.samples === 'no',
+                      'bg-yellow-100 text-yellow-800': item.samples === 'Pending',
+                    }"
                   >
-                    <span class="font-medium">{{ usage.itemDescription }}</span> - Qty:
-                    {{ usage.quantity }}
+                    {{ item.samples }}
+                  </button>
+                </td>
+                <td class="px-6 py-4 text-sm">
+                  <span class="text-gray-600">{{ item.usedInItems.length }} items</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <button
+                    @click="toggleExpanded(index)"
+                    class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  >
+                    <span>{{ expandedRow === index ? 'Hide' : 'View' }} Details</span>
+                    <svg
+                      class="w-4 h-4 transition-transform"
+                      :class="{ 'rotate-180': expandedRow === index }"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+              <!-- Expanded Row Details -->
+              <tr v-if="expandedRow === index" :key="`expanded-${index}`" class="bg-gray-50">
+                <td colspan="7" class="px-6 py-4">
+                  <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                      Items using "{{ item.materialName }}"
+                    </h3>
+                    <div class="space-y-2">
+                      <div
+                        v-for="(usage, usageIndex) in item.usedInItems"
+                        :key="usageIndex"
+                        class="bg-white p-3 rounded-lg border border-gray-200"
+                      >
+                        <div class="flex justify-between items-start">
+                          <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">
+                              {{ usage.itemDescription }}
+                            </p>
+                          </div>
+                          <div class="text-right ml-4">
+                            <p class="text-sm text-gray-600">
+                              <span class="font-semibold">Qty:</span>
+                              {{ usage.quantity.toFixed(2) }} {{ item.unit }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-200">
+                      <p class="text-sm text-gray-600">
+                        <span class="font-semibold">Total Quantity:</span>
+                        {{ item.quantity.toFixed(2) }} {{ item.unit }}
+                        <span class="mx-2">•</span>
+                        <span class="font-semibold">Used in:</span>
+                        {{ item.usedInItems.length }} different items
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </td>
-            </tr>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
@@ -187,23 +217,35 @@
         No materials found matching your filters.
       </div>
     </div>
+
+    <!-- Modals -->
     <TDSCertificate
       :show="showTdsModal"
       :material="selectedMaterial"
       @close="showTdsModal = false"
       @send="handleSendMail"
     />
-    <Sample
+    <!-- <Sample
       :show="showSampleModal"
       :material="selectedMaterial"
       @close="showSampleModal = false"
       @submit="handleSampleSubmit"
+    /> -->
+    <Sample
+      :show="showSampleModal"
+      :material="selectedMaterial"
+      :lineItemId="
+        expandedRow !== null ? filteredMaterials[expandedRow]?.usedInItems[0]?.lineItemId : null
+      "
+      @close="showSampleModal = false"
+      @refresh="fetchMaterials"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import TDSCertificate from './TDSCertificate.vue'
 import Sample from './Sample.vue'
@@ -214,22 +256,13 @@ const props = defineProps({
     default: '/gateway/api',
   },
 })
+
+const route = useRoute()
+const siteName = computed(() => route.params.siteName)
+
 const showTdsModal = ref(false)
 const showSampleModal = ref(false)
-
 const selectedMaterial = ref(null)
-const activeTab = ref('mail')
-
-const mailForm = ref({
-  to: '',
-  cc: '',
-  subject: '',
-  content: '',
-  file: null,
-})
-const handleFileUpload = (e) => {
-  mailForm.value.file = e.target.files[0]
-}
 
 const materials = ref([])
 const loading = ref(false)
@@ -239,7 +272,7 @@ const expandedRow = ref(null)
 
 const filters = ref({
   tdsCertificate: '',
-  shopDrawing: '',
+  samples: '',
 })
 
 // Computed: Filtered materials
@@ -257,9 +290,9 @@ const filteredMaterials = computed(() => {
     filtered = filtered.filter((item) => item.tdsCertificate === filters.value.tdsCertificate)
   }
 
-  // Shop Drawing filter
-  if (filters.value.shopDrawing) {
-    filtered = filtered.filter((item) => item.shopDrawing === filters.value.shopDrawing)
+  // Samples filter
+  if (filters.value.samples) {
+    filtered = filtered.filter((item) => item.samples === filters.value.samples)
   }
 
   return filtered
@@ -270,7 +303,11 @@ const fetchMaterials = async () => {
   error.value = null
 
   try {
-    const response = await axios.get(`${props.apiBaseUrl}/materials/unique`)
+    const response = await axios.get(`${props.apiBaseUrl}/materials/unique`, {
+      params: {
+        siteName: siteName.value,
+      },
+    })
     materials.value = response.data
   } catch (err) {
     error.value = err.response?.data?.error || 'Failed to fetch materials'
@@ -285,14 +322,11 @@ const toggleExpanded = (index) => {
 }
 
 const handleTdsClick = (item) => {
-  if (item.tdsCertificate !== 'yes') return
-
   selectedMaterial.value = item
   showTdsModal.value = true
 }
-const handleSampleClick = (item) => {
-  if (item.samples !== 'yes') return
 
+const handleSampleClick = (item) => {
   selectedMaterial.value = item
   showSampleModal.value = true
 }
@@ -316,11 +350,21 @@ const handleSendMail = async (payload) => {
   }
 }
 
+const handleSampleSubmit = async (payload) => {
+  try {
+    // Add your sample submission logic here
+    console.log('Sample submitted:', payload)
+    showSampleModal.value = false
+  } catch (err) {
+    alert('Failed to submit sample')
+  }
+}
+
 const clearFilters = () => {
   searchQuery.value = ''
   filters.value = {
     tdsCertificate: '',
-    shopDrawing: '',
+    samples: '',
   }
 }
 

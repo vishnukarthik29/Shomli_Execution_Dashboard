@@ -44,6 +44,12 @@
         </h1>
         <p class="text-gray-600 mt-1">Total Items: {{ filteredLineItems.length }}</p>
       </div>
+      <button
+        @click="showMessageModal = true"
+        class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition flex items-center gap-2"
+      >
+        Send All Shop Drawings
+      </button>
 
       <!-- Material Tracker Button -->
       <router-link
@@ -142,6 +148,20 @@
                         stroke-linejoin="round"
                         stroke-width="2"
                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    @click="openShopDrawingModal(item)"
+                    class="text-purple-600 hover:text-purple-800"
+                    title="Shop Drawing"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
                   </button>
@@ -520,6 +540,63 @@
         </div>
       </div>
     </div>
+    <ShopDrawing
+      :show="showShopDrawingModal"
+      :material="selectedMaterialForShopDrawing"
+      @close="closeShopDrawingModal"
+      @send="handleShopDrawingSend"
+    />
+    <!-- Message Modal -->
+    <div
+      v-if="showMessageModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Send Shop Drawing Messages</h3>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Internal Team Message
+            </label>
+            <textarea
+              v-model="internalMessage"
+              rows="3"
+              placeholder="Message for internal team..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              External Vendor Message
+            </label>
+            <textarea
+              v-model="externalMessage"
+              rows="3"
+              placeholder="Message for external team/vendor..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            @click="showMessageModal = false"
+            class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+
+          <button
+            @click="sendBulkShopDrawings"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            Send Emails
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -527,6 +604,7 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
+import ShopDrawing from './ShopDrawing.vue'
 
 const route = useRoute()
 const lineItems = ref([])
@@ -541,6 +619,11 @@ const showDropdown = ref(false)
 const showAddMaterialModal = ref(false)
 const materialSearch = ref('')
 const dropdownRef = ref(null)
+const showShopDrawingModal = ref(false)
+const selectedMaterialForShopDrawing = ref(null)
+const showMessageModal = ref(false)
+const internalMessage = ref('')
+const externalMessage = ref('')
 
 const filters = ref({
   search: '',
@@ -601,6 +684,39 @@ const filteredMaterials = computed(() => {
       material.category.toLowerCase().includes(searchLower),
   )
 })
+
+const openShopDrawingModal = (item) => {
+  selectedMaterialForShopDrawing.value = item
+  showShopDrawingModal.value = true
+}
+
+const closeShopDrawingModal = () => {
+  showShopDrawingModal.value = false
+  selectedMaterialForShopDrawing.value = null
+}
+
+const handleShopDrawingSend = async (data) => {
+  try {
+    const formData = new FormData()
+    formData.append('file', data.file)
+    formData.append('to', data.to)
+    formData.append('cc', data.cc)
+    formData.append('subject', data.subject)
+    formData.append('content', data.content)
+    formData.append('materialId', data.material.materialId)
+    formData.append('lineItemId', selectedMaterialForShopDrawing.value._id)
+
+    await axios.post(`${props.apiBaseUrl}/shop-drawing/send-mail`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    showSuccess('Shop drawing mail sent successfully!')
+    closeShopDrawingModal()
+    await fetchLineItems()
+  } catch (err) {
+    error.value = err.response?.data?.error || 'Failed to send shop drawing mail'
+  }
+}
 
 // Auto-hide success message
 const showSuccess = (message) => {
@@ -806,6 +922,45 @@ const deleteItem = async (id) => {
     showSuccess('Item deleted successfully!')
   } catch (err) {
     error.value = err.response?.data?.error || 'Failed to delete item'
+  }
+}
+// const sendBulkShopDrawings = async () => {
+//   if (!confirm('Send shop drawing emails for all eligible line items?')) return
+
+//   try {
+//     loading.value = true
+
+//     await axios.post(`${props.apiBaseUrl}/shop-drawing/send-bulk`, {
+//       siteName: route.params.siteName,
+//     })
+
+//     showSuccess('Shop drawings sent successfully!')
+//     await fetchLineItems()
+//   } catch (err) {
+//     error.value = err.response?.data?.error || 'Failed to send shop drawings'
+//   } finally {
+//     loading.value = false
+//   }
+// }
+const sendBulkShopDrawings = async () => {
+  try {
+    loading.value = true
+    showMessageModal.value = false
+
+    await axios.post(`${props.apiBaseUrl}/shop-drawing/send-bulk`, {
+      siteName: route.params.siteName,
+      internalMessage: internalMessage.value,
+      externalMessage: externalMessage.value,
+    })
+
+    showSuccess('Shop drawings sent successfully!')
+    internalMessage.value = ''
+    externalMessage.value = ''
+    await fetchLineItems()
+  } catch (err) {
+    error.value = err.response?.data?.error || 'Failed to send shop drawings'
+  } finally {
+    loading.value = false
   }
 }
 

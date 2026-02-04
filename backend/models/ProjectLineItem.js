@@ -161,6 +161,14 @@ const projectLineItemSchema = new mongoose.Schema(
           type: Date,
           default: Date.now,
         },
+        sampleHistory: [
+          {
+            fileUrl: String,
+            fileName: String,
+            fileType: String,
+            uploadedAt: { type: Date, default: Date.now },
+          },
+        ],
       },
     ],
     shopDrawing: {
@@ -168,6 +176,16 @@ const projectLineItemSchema = new mongoose.Schema(
       enum: ['Internal', 'External', null],
       default: null,
     },
+    shopDrawingMail: {
+      sent: { type: Boolean, default: false },
+      sentAt: { type: Date },
+      sentTo: { type: String },
+      subject: { type: String },
+      content: { type: String },
+    },
+    // shopDrawingMail: {
+    //   sent: Boolean,
+    // },
   },
   {
     timestamps: true,
